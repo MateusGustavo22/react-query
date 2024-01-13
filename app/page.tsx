@@ -5,24 +5,33 @@ import Link from "next/link";
 
 export default function Home() {
   async function getRepos() {
-    const data = await fetch(
-      "https://api.github.com/users/MateusGustavo22/repos"
-    );
+    try {
+      const data = await fetch(
+        "https://api.github.com/users/MateusGustavo22/repos"
+      );
 
-    const repos = await data.json();
+      const repos = await data.json();
 
-    return repos;
+      return repos;
+    } catch (error) {
+      return error;
+    }
   }
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["repos"],
     queryFn: getRepos,
+    refetchOnWindowFocus: false
   });
+
+  if (isLoading) return <span className="text-gray-400">Carregando...</span>;
+  if (isError)
+    return <span className="text-gray-400">Erro ao carregar a pagina</span>;
 
   return (
     <div className="w-max m-auto mt-8 flex flex-col gap-2">
       <span className="text-white text-xl">Repositórios</span>
-      {data ? (
+      {data &&
         data?.map((repo) => (
           <div className="bg-zinc-900 px-6 py-2" key={repo.id}>
             <Link href={repo.html_url}>
@@ -31,10 +40,7 @@ export default function Home() {
               </span>
             </Link>
           </div>
-        ))
-      ) : (
-        <span className="text-gray-400">Carregando...</span>
-      )}
+        ))}
     </div>
   );
 }
